@@ -201,28 +201,20 @@ vector<Node> get_neighbors(Node* node, const int max_row, const int max_col)
     Node new_node;
     int new_row;
     int new_col;
+    int offset[4][2] = {{-1, 0},
+                        {0, +1},
+                        {+1, 0},
+                        {0, -1}};
 
-    for (int i = -1; i <= 1; i += 2)
+    for (int i = 0; i < 4; i++)
     {
-        new_row = node->row;
-        new_col = node->col + i;
+        new_row = node->row + offset[i][0];
+        new_col = node->col + offset[i][1];
         if (new_row >= 0 && new_col >= 0 &&
             new_row < max_row && new_col < max_col)
         {
             new_node.row = new_row;
             new_node.col = new_col;
-            new_node.parent = node;
-            neighbors.push_back(new_node);
-        }
-
-        new_row = node->row + i;
-        new_col = node->col;
-        if (new_row >= 0 && new_col >= 0 &&
-            new_row < max_row && new_col < max_col)
-        {
-            new_node.row = new_row;
-            new_node.col = new_col;
-            new_node.parent = node;
             neighbors.push_back(new_node);
         }
     }
