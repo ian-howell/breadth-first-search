@@ -38,8 +38,12 @@ int main()
 
     initscr();
     start_color();
-    cbreak();
-    noecho();
+    init_pair(1, COLOR_BLACK, COLOR_BLACK);
+    init_pair(2, COLOR_WHITE, COLOR_WHITE);
+    init_pair(3, COLOR_BLUE, COLOR_BLUE);
+    init_pair(4, COLOR_RED, COLOR_RED);
+    init_pair(5, COLOR_GREEN, COLOR_GREEN);
+
     keypad(stdscr, TRUE);
     curs_set(0);
 
@@ -96,13 +100,6 @@ void fill_grid(Grid* grid)
 
 void print_grid(Grid* grid)
 {
-    start_color();
-    init_pair(1, COLOR_BLACK, COLOR_BLACK);
-    init_pair(2, COLOR_WHITE, COLOR_WHITE);
-    init_pair(3, COLOR_BLUE, COLOR_BLUE);
-    init_pair(4, COLOR_RED, COLOR_RED);
-    init_pair(5, COLOR_GREEN, COLOR_GREEN);
-
     for (int i = 0; i < grid->rows; i++)
     {
         for (int j = 0; j < grid->cols; j++)
@@ -119,12 +116,6 @@ void print_grid(Grid* grid)
                 attron(COLOR_PAIR(4));
 
             mvwprintw(stdscr, i + 1, j + 1, "%c", grid->grid[i][j]);
-
-            attroff(COLOR_PAIR(1));
-            attroff(COLOR_PAIR(2));
-            attroff(COLOR_PAIR(3));
-            attroff(COLOR_PAIR(4));
-            attroff(COLOR_PAIR(5));
         }
     }
     refresh();
