@@ -35,7 +35,11 @@ int main()
 
     my_grid = create_grid(rows, cols);
     fill_grid(my_grid);
+
     print_grid(my_grid);
+    breadth_first_search(my_grid);
+    print_grid(my_grid);
+
     free_grid(my_grid);
 
     return 0;
@@ -87,9 +91,6 @@ void print_grid(Grid* grid)
         cout << endl;
     }
 
-    cout << "Start at (" << grid->start.row << ", " << grid->start.col << ")" << endl;
-    cout << "End at (" << grid->end.row << ", " << grid->end.col << ")" << endl;
-
     return;
 }
 
@@ -108,6 +109,31 @@ void free_grid(Grid* grid)
 void breadth_first_search(Grid* grid)
 {
     queue<Node> frontier;
+    grid->grid[grid->start.row][grid->start.col] = '.';
+    frontier.push(grid->start);
+
+    while (!frontier.empty())
+    {
+        Node u = frontier.front(); frontier.pop();
+        if (u.row == grid->end.row && u.col == grid->end.col)
+        {
+            grid->grid[u.row][u.col] = 'E';
+            grid->grid[grid->start.row][grid->start.col] = 'S';
+            cout << "Done!" << endl;
+            return;
+        }
+
+        vector<Node> neighbors = get_neighbors(u, grid->rows, grid->cols);
+        for (size_t i = 0; i < neighbors.size(); i++)
+        {
+            if (grid->grid[neighbors[i].row][neighbors[i].col] != '.' &&
+                grid->grid[neighbors[i].row][neighbors[i].col] != '#')
+            {
+                grid->grid[neighbors[i].row][neighbors[i].col] = '.';
+                frontier.push(neighbors[i]);
+            }
+        }
+    }
 
 
     return;
