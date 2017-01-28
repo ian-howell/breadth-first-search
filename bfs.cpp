@@ -1,3 +1,6 @@
+#include <ncurses.h>
+#include <cstdlib>
+#include <unistd.h>
 #include <queue>
 #include <vector>
 #include <iostream>
@@ -33,6 +36,13 @@ int main()
     int rows, cols;
     cin >> rows >> cols;
 
+    initscr();
+    start_color();
+    cbreak();
+    noecho();
+    keypad(stdscr, TRUE);
+    curs_set(0);
+
     my_grid = create_grid(rows, cols);
     fill_grid(my_grid);
 
@@ -42,6 +52,8 @@ int main()
 
     free_grid(my_grid);
 
+    getch();
+    endwin();
     return 0;
 }
 
@@ -84,12 +96,38 @@ void fill_grid(Grid* grid)
 
 void print_grid(Grid* grid)
 {
+    start_color();
+    init_pair(1, COLOR_BLACK, COLOR_BLACK);
+    init_pair(2, COLOR_WHITE, COLOR_WHITE);
+    init_pair(3, COLOR_BLUE, COLOR_BLUE);
+    init_pair(4, COLOR_RED, COLOR_RED);
+    init_pair(5, COLOR_GREEN, COLOR_GREEN);
+
     for (int i = 0; i < grid->rows; i++)
     {
         for (int j = 0; j < grid->cols; j++)
-            cout << grid->grid[i][j];
-        cout << endl;
+        {
+            if (grid->grid[i][j] == '#')
+                attron(COLOR_PAIR(1));
+            else if (grid->grid[i][j] == ' ')
+                attron(COLOR_PAIR(2));
+            else if (grid->grid[i][j] == '.')
+                attron(COLOR_PAIR(5));
+            else if (grid->grid[i][j] == 'S')
+                attron(COLOR_PAIR(3));
+            else
+                attron(COLOR_PAIR(4));
+
+            mvwprintw(stdscr, i + 1, j + 1, "%c", grid->grid[i][j]);
+
+            attroff(COLOR_PAIR(1));
+            attroff(COLOR_PAIR(2));
+            attroff(COLOR_PAIR(3));
+            attroff(COLOR_PAIR(4));
+            attroff(COLOR_PAIR(5));
+        }
     }
+    refresh();
 
     return;
 }
@@ -110,7 +148,7 @@ void breadth_first_search(Grid* grid)
 {
     queue<Node*> frontier;
     queue<Node*> to_delete;
-    grid->grid[grid->start.row][grid->start.col] = '.';
+    // grid->grid[grid->start.row][grid->start.col] = '.';
     grid->start.parent = NULL;
     frontier.push(&grid->start);
 
@@ -121,7 +159,11 @@ void breadth_first_search(Grid* grid)
         if (u->row == grid->end.row && u->col == grid->end.col)
         {
             for (Node* runner = u; runner; runner = runner->parent)
+            {
                 grid->grid[runner->row][runner->col] = '*';
+                print_grid(grid);
+                usleep(50000);
+            }
 
             delete u;
             while(!frontier.empty())
@@ -141,9 +183,13 @@ void breadth_first_search(Grid* grid)
         for (size_t i = 0; i < neighbors.size(); i++)
         {
             if (grid->grid[neighbors[i].row][neighbors[i].col] != '.' &&
-                grid->grid[neighbors[i].row][neighbors[i].col] != '#')
+                grid->grid[neighbors[i].row][neighbors[i].col] != '#' &&
+                grid->grid[neighbors[i].row][neighbors[i].col] != 'S')
             {
                 grid->grid[neighbors[i].row][neighbors[i].col] = '.';
+                // system("clear");
+                print_grid(grid);
+                usleep(12000);
                 neighbors[i].parent = u;
                 Node* v = new Node;
                 *v = neighbors[i];
