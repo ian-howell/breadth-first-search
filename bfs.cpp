@@ -120,20 +120,28 @@ vector<Node> get_neighbors(const Node& node, const int max_row, const int max_co
     int new_row;
     int new_col;
 
-    for (int i = -1; i < 1; i += 2)
+    for (int i = -1; i <= 1; i += 2)
     {
-        for (int j = -1; j < 1; j += 2)
+        new_row = node.row;
+        new_col = node.col + i;
+        if (new_row >= 0 && new_col >= 0 &&
+            new_row < max_row && new_col < max_col)
         {
-            new_row = node.row + i;
-            new_col = node.col + j;
-            if (new_row >= 0 && new_col >= 0 &&
-                new_row < max_row && new_col < max_col)
-            {
-                new_node.row = new_row;
-                new_node.col = new_col;
-                new_node.visited = true;
-                neighbors.push_back(new_node);
-            }
+            new_node.row = new_row;
+            new_node.col = new_col;
+            new_node.visited = true;
+            neighbors.push_back(new_node);
+        }
+
+        new_row = node.row + i;
+        new_col = node.col;
+        if (new_row >= 0 && new_col >= 0 &&
+            new_row < max_row && new_col < max_col)
+        {
+            new_node.row = new_row;
+            new_node.col = new_col;
+            new_node.visited = true;
+            neighbors.push_back(new_node);
         }
     }
 
