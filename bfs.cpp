@@ -8,7 +8,7 @@ struct Node
 {
     int row;
     int col;
-    bool visited;
+    Node* parent;
 };
 
 struct Grid
@@ -25,7 +25,7 @@ void fill_grid(Grid* grid);
 void print_grid(Grid* grid);
 void free_grid(Grid* grid);
 void breadth_first_search(Grid* grid);
-vector<Node> get_neighbors(const Node& node, const int max_row, const int max_col);
+vector<Node> get_neighbors(Node* node, const int max_row, const int max_col);
 
 int main()
 {
@@ -108,18 +108,32 @@ void free_grid(Grid* grid)
 
 void breadth_first_search(Grid* grid)
 {
-    queue<Node> frontier;
+    queue<Node*> frontier;
+    queue<Node*> to_delete;
     grid->grid[grid->start.row][grid->start.col] = '.';
-    frontier.push(grid->start);
+    grid->start.parent = NULL;
+    frontier.push(&grid->start);
 
+    Node* u;
     while (!frontier.empty())
     {
-        Node u = frontier.front(); frontier.pop();
-        if (u.row == grid->end.row && u.col == grid->end.col)
+        u = frontier.front(); frontier.pop();
+        if (u->row == grid->end.row && u->col == grid->end.col)
         {
-            grid->grid[u.row][u.col] = 'E';
-            grid->grid[grid->start.row][grid->start.col] = 'S';
-            cout << "Done!" << endl;
+            for (Node* runner = u; runner; runner = runner->parent)
+                grid->grid[runner->row][runner->col] = '*';
+
+            delete u;
+            while(!frontier.empty())
+            {
+                u = frontier.front(); frontier.pop();
+                delete u;
+            }
+            while (!to_delete.empty())
+            {
+                u = to_delete.front(); to_delete.pop();
+                delete u;
+            }
             return;
         }
 
@@ -130,16 +144,21 @@ void breadth_first_search(Grid* grid)
                 grid->grid[neighbors[i].row][neighbors[i].col] != '#')
             {
                 grid->grid[neighbors[i].row][neighbors[i].col] = '.';
-                frontier.push(neighbors[i]);
+                neighbors[i].parent = u;
+                Node* v = new Node;
+                *v = neighbors[i];
+                frontier.push(v);
             }
         }
-    }
 
+        if (u->parent != NULL)
+            to_delete.push(u);
+    }
 
     return;
 }
 
-vector<Node> get_neighbors(const Node& node, const int max_row, const int max_col)
+vector<Node> get_neighbors(Node* node, const int max_row, const int max_col)
 {
     vector<Node> neighbors;
     Node new_node;
@@ -148,25 +167,25 @@ vector<Node> get_neighbors(const Node& node, const int max_row, const int max_co
 
     for (int i = -1; i <= 1; i += 2)
     {
-        new_row = node.row;
-        new_col = node.col + i;
+        new_row = node->row;
+        new_col = node->col + i;
         if (new_row >= 0 && new_col >= 0 &&
             new_row < max_row && new_col < max_col)
         {
             new_node.row = new_row;
             new_node.col = new_col;
-            new_node.visited = true;
+            new_node.parent = node;
             neighbors.push_back(new_node);
         }
 
-        new_row = node.row + i;
-        new_col = node.col;
+        new_row = node->row + i;
+        new_col = node->col;
         if (new_row >= 0 && new_col >= 0 &&
             new_row < max_row && new_col < max_col)
         {
             new_node.row = new_row;
             new_node.col = new_col;
-            new_node.visited = true;
+            new_node.parent = node;
             neighbors.push_back(new_node);
         }
     }
