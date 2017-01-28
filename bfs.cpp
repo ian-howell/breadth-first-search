@@ -43,6 +43,8 @@ int main()
     init_pair(3, COLOR_BLUE, COLOR_BLUE);
     init_pair(4, COLOR_RED, COLOR_RED);
     init_pair(5, COLOR_GREEN, COLOR_GREEN);
+    init_pair(6, COLOR_YELLOW, COLOR_YELLOW);
+    init_pair(7, COLOR_CYAN, COLOR_CYAN);
 
     keypad(stdscr, TRUE);
     curs_set(0);
@@ -108,12 +110,16 @@ void print_grid(Grid* grid)
                 attron(COLOR_PAIR(1));
             else if (grid->grid[i][j] == ' ')
                 attron(COLOR_PAIR(2));
-            else if (grid->grid[i][j] == '.')
-                attron(COLOR_PAIR(5));
             else if (grid->grid[i][j] == 'S')
                 attron(COLOR_PAIR(3));
-            else
+            else if (grid->grid[i][j] == 'E')
                 attron(COLOR_PAIR(4));
+            else if (grid->grid[i][j] == '.')
+                attron(COLOR_PAIR(5));
+            else if (grid->grid[i][j] == '*')
+                attron(COLOR_PAIR(6));
+            else if (grid->grid[i][j] == ',')
+                attron(COLOR_PAIR(7));
 
             mvwprintw(stdscr, i + 1, j + 1, "%c", grid->grid[i][j]);
         }
@@ -147,6 +153,7 @@ void breadth_first_search(Grid* grid)
     while (!frontier.empty())
     {
         u = frontier.front(); frontier.pop();
+        grid->grid[u->row][u->col] = '.';
         if (u->row == grid->end.row && u->col == grid->end.col)
         {
             for (Node* runner = u; runner; runner = runner->parent)
@@ -173,19 +180,21 @@ void breadth_first_search(Grid* grid)
         vector<Node> neighbors = get_neighbors(u, grid->rows, grid->cols);
         for (size_t i = 0; i < neighbors.size(); i++)
         {
-            if (grid->grid[neighbors[i].row][neighbors[i].col] != '.' &&
-                grid->grid[neighbors[i].row][neighbors[i].col] != '#' &&
-                grid->grid[neighbors[i].row][neighbors[i].col] != 'S')
+            switch (grid->grid[neighbors[i].row][neighbors[i].col])
             {
-                grid->grid[neighbors[i].row][neighbors[i].col] = '.';
-                // system("clear");
-                print_grid(grid);
-                usleep(12000);
-                neighbors[i].parent = u;
-                Node* v = new Node;
-                *v = neighbors[i];
-                frontier.push(v);
+            case '.':
+            case '#':
+            case ',':
+            case 'S':
+                continue;
             }
+            grid->grid[neighbors[i].row][neighbors[i].col] = ',';
+            print_grid(grid);
+            usleep(12000);
+            neighbors[i].parent = u;
+            Node* v = new Node;
+            *v = neighbors[i];
+            frontier.push(v);
         }
 
         if (u->parent != NULL)
